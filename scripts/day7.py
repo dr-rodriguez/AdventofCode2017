@@ -61,6 +61,7 @@ What is the name of the bottom program?
 """
 
 import re
+import numpy as np
 
 test_input = """pbga (66)
 xhth (57)
@@ -85,8 +86,8 @@ pattern1 = r'(\w*) \((\d*)\)'
 tower = {}
 weights = {}
 levels = []
-for line in test_input.split('\n'):
-# for line in my_input:
+# for line in test_input.split('\n'):
+for line in my_input:
     print(line.rstrip())
     t = re.findall(pattern1, line)
     print(t)
@@ -127,34 +128,51 @@ ugml + (gyxo + ebii + jptl) = 68 + (61 + 61 + 61) = 251
 padx + (pbga + havc + qoyq) = 45 + (66 + 66 + 66) = 243
 fwft + (ktlj + cntj + xhth) = 72 + (57 + 57 + 57) = 243
 As you can see, tknk's disc is unbalanced: ugml's stack is heavier than the other two. 
-Even though the nodes above ugml are balanced, ugml itself is too heavy: it needs to be 8 units 
-lighter for its stack to weigh 243 and keep the towers balanced. If this change were made, its weight would be 60.
+Even though the nodes above ugml are balanced, ugml itself is too heavy: it needs to be 8 units lighter for its 
+stack to weigh 243 and keep the towers balanced. If this change were made, its weight would be 60.
 
 Given that exactly one program is the wrong weight, what would its weight need to be to balance the entire tower?
 """
 
-sum_weights = {}
-for k, v in tower.items():
-    if len(v) == 0:
-        sum_weights[k] = weights[k]
+sum_weights = weights.copy()
+
+def add_weight(k):
+    global weights
+    global tower
+    # print(k, tower[k], weights[k])
+    if len(tower[k]) == 0:
+        return weights[k]
     else:
-        sum = 0
-        for p in v:
-            sum += weights[p]
-        sum_weights[k] = sum
+        return weights[k] + sum([add_weight(s) for s in tower[k]])
 
-tower_level = {}
-tower_level[bottom] = 0
-new_tower = tower.copy()
+for k, v in tower.items():
+    sum_weights[k] = add_weight(k)
+
+orig_bottom = 'tknk'
+orig_bottom = 'qibuqqg'
+bottom = orig_bottom
+c = True
 lvl = 0
-while len(new_tower) > 0:
-    plist = []
-    for k, v in tower_level.items():
-        if v == lvl:
-            plist += new_tower.pop(k)
-    for p in plist:
-        tower_level[p] = lvl + 1
-    lvl += 1
-    print(new_tower)
-    print(tower_level)
+while c:
+    print(lvl)
+    plist = tower[bottom]
+    wlist = [sum_weights[p] for p in plist]
+    mode = max(set(wlist), key=wlist.count)
+    ind, = np.where(np.array(wlist) != mode)
+    if len(ind) == 0:
+        c = False
+        print(bottom, plist, wlist)
+    else:
+        print(bottom, plist, wlist)
+        bottom = plist[ind[0]]
+        lvl += 1
 
+
+def get_results(bottom):
+    global weights
+    plist = tower[bottom]
+    wlist = [sum_weights[p] for p in plist]
+    print(bottom, plist, wlist, weights[bottom], weights[bottom] + sum(wlist))
+
+get_results('egbzge')
+print(1086-7)
