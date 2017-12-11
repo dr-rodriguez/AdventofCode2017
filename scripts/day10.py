@@ -69,18 +69,13 @@ def reverse_arr(l, ind, length):
         find = len(l)
         diff = (ind+length) - len(l)
         t2 = temp[0:diff]
-        # print('find, diff', find, diff)
-        # print('t2',t2)
     else:
         diff = 0
         find = ind + length
         t2 = []
 
     t1 = temp[ind:find]
-    # print('{}:{}'.format(ind, find))
-    # print('t1',t1)
     t = np.append(t1, t2)[::-1]
-    # print('reversed:',t)
     temp[ind:find] = t[0:find-ind]
     temp[0:diff] = t[find-ind:]
 
@@ -90,9 +85,7 @@ ind = 0
 skip = 0
 arr = np.arange(256)
 for v in my_input:
-# arr = np.arange(5)
-# for v in test_input:
-    print(arr, ind, arr[ind], skip, v)
+#   print(arr, ind, arr[ind], skip, v)
     arr = reverse_arr(arr, ind, v)
     ind = (ind+skip+v) % len(arr)
     skip += 1
@@ -169,6 +162,7 @@ def knot_hash(my_input):
     ind = 0
     skip = 0
     arr = np.arange(256)
+
     # 64 rounds of basic reversing
     for i in range(64):
         for v in lengths:
