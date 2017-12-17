@@ -140,6 +140,7 @@ In total, in this example, 1242 regions are present.
 How many regions are present given your key string?
 """
 
+# My code did not work, probably since I needed to recursively iterate and set adjacent-to-adjacent in region_dict
 # region BAD
 def check_adjacent(i, j):
     global grid
@@ -277,6 +278,8 @@ print(region_count)
 # Should have realized I could do something like this given last year's puzzles
 seen = set()
 def dfs(i, j):
+    global seen
+    global grid
     if (i, j) in seen:
         return
     if not grid[i][j]:
