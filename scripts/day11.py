@@ -40,7 +40,6 @@ with open('data/day11.txt', 'r') as f:
     raw_data = f.read().rstrip().split(',')
 
 my_input = Counter(raw_data)
-my_input
 
 # NE -> NW = N
 my_input['ne'] -= my_input['nw']
@@ -71,13 +70,45 @@ for k, v in my_input.items():
     steps += v
 print(steps)
 
-# 53 is incorrect
-# 337 is too low
-# 942 is too high
-
 """
 --- Part Two ---
 How many steps away is the furthest he ever got from his starting position?
 """
 
+# Reading through https://www.redblobgames.com/grids/hexagons/ to learn about cube coordinates for hexagons
 
+
+def cube_distance(x, y, z):
+    return (abs(x) + abs(y) + abs(z)) // 2
+
+
+def make_move(step):
+    global x, y, z
+    if step == 'n':
+        y += 1
+        z -= 1
+    elif step == 's':
+        z += 1
+        y -= 1
+    elif step == 'ne':
+        x += 1
+        z -= 1
+    elif step == 'se':
+        x += 1
+        y -= 1
+    elif step == 'nw':
+        y += 1
+        x -= 1
+    elif step == 'sw':
+        z += 1
+        x -= 1
+    return x, y, z
+
+x, y, z = 0, 0, 0
+count = 0
+for line in raw_data:
+    x, y, z = make_move(line)
+    dist = cube_distance(x, y, z)
+    print(x,y,z, line, dist)
+    count = max(dist, count)
+print(count)
