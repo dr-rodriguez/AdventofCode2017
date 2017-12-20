@@ -80,3 +80,12 @@ What is the value after 0 the moment 50000000 is inserted?
 """
 
 # I have a feeling brute-force will not work here
+
+# Hint from reddit (top answers used collections.deque and brute-forced it)
+# Clever alternative to actually *building* the list:
+i = 0
+for t in range(1, 50000001):
+    i = (i+steps) % t + 1
+    if i == 1:
+        ans = t
+print(ans)
