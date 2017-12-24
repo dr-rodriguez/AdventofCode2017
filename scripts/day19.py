@@ -43,48 +43,122 @@ my_input = test_input
 my_input = my_input.split('\n')
 my_input = [s.split('.')[0] for s in my_input]
 
+with open('data/day19.txt', 'r') as f:
+    my_input = f.read().rstrip().split('\n')
+
+# Re-add blank spaces
+line_lengths = [len(s) for s in my_input]
+for i, line in enumerate(my_input):
+    if line_lengths[i] < 200:
+        newline = line + ' '*(max(line_lengths)-line_lengths[i])
+        my_input[i] = newline
+
 
 def proc_move(x, y, old_val, direction):
     global my_input
     val = my_input[y][x]
+    maxy = len(my_input)
+    maxx = len(my_input)
 
-    if val == '|':
+    if val == '|' and direction in ('up', 'down'):
         if direction == 'down':
             y += 1
         else:
             y -= 1
-    elif val == '-':
+    elif val == '-' and direction in ('left', 'right'):
         if direction == 'right':
             x += 1
         else:
             x -= 1
     elif val == '+':
         if old_val == '|' or direction in ('down', 'up'):
-            if direction == 'down':
-                y += 1
-                x1, x2 = my_input[y][x - 1, x + 1]
+            if x + 1 >= maxx:
+                x1, x2 = my_input[y][x - 1], ' '
+            elif x - 1 < 0:
+                x1, x2 = ' ', my_input[y][x + 1]
             else:
-                y -= 1
-                x1, x2 = my_input[y][x - 1, x + 1]
+                x1, x2 = my_input[y][x - 1:x + 1]
 
-            if x1 != '':
-                y += 1
+            if x1 != ' ':
                 x -= 1
                 direction = 'left'
             else:
-                y += 1
                 x += 1
                 direction = 'right'
         elif old_val == '-' or direction in ('right', 'left'):
-            if direction == 'right':
-                x += 1
-                y1, y2 = my_input[y - 1, y + 1][x]
+            if y + 1 >= maxy:
+                y1, y2 = my_input[y - 1][x], ' '
+            elif y - 1 < 0:
+                y1, y2 = ' ', my_input[y + 1][x]
             else:
-                x -= 1
-                y1, y2 = my_input[y - 1, y + 1][x]
+                y1 = my_input[y - 1][x]
+
+            if y1 != ' ':
+                y -= 1
+                direction = 'up'
+            else:
+                y += 1
+                direction = 'down'
+    else:
+        if direction == 'down':
+            y += 1
+        elif direction == 'up':
+            y -= 1
+        elif direction == 'left':
+            x -= 1
+        elif direction == 'right':
+            x += 1
 
 
-    newval = my_input[y][x]
+    return x, y, val, direction
 
-    return x, y, newval, direction
 
+x = 1  # 5 for test input
+y = 0
+val = my_input[y][x]
+direction = 'down'
+answer = []
+count = 0
+while True:
+    # print(x, y, val, direction)
+    x, y, val, direction = proc_move(x, y, val, direction)
+    if val not in ('-', '', ' ', '|', '+'):
+        answer.append(val)
+
+    if val in ('', ' '):
+        break
+
+    count += 1
+
+print(''.join(answer))
+print(count)
+
+"""
+--- Part Two ---
+The packet is curious how many steps it needs to go.
+
+For example, using the same routing diagram from the example above...
+
+     |
+     |  +--+
+     A  |  C
+ F---|--|-E---+
+     |  |  |  D
+     +B-+  +--+
+
+...the packet would go:
+
+6 steps down (including the first line at the top of the diagram).
+3 steps right.
+4 steps up.
+3 steps right.
+4 steps down.
+3 steps right.
+2 steps up.
+13 steps left (including the F it stops on).
+This would result in a total of 38 steps.
+
+How many steps does the packet need to go?
+"""
+
+print(count)
