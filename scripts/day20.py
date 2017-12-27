@@ -42,7 +42,11 @@ in the long run, particle 0 will stay closest.
 Which particle will stay closest to position <0,0,0> in the long term?
 """
 
+# Had to get help from Reddit since I was not getting correct answers despite my approach.
+# Issues were mainly with lists/dicts/etc as well as picking closest particle as opposed to which remains closest
+
 import re
+from collections import defaultdict  # defaultdict appends to existing elements
 
 test_input = """p=< 3,0,0>, v=< 2,0,0>, a=<-1,0,0>
 p=< 4,0,0>, v=< 0,0,0>, a=<-2,0,0>"""
@@ -51,43 +55,104 @@ my_input = test_input.split('\n')
 with open('data/day20.txt', 'r') as f:
     my_input = f.read().rstrip().split('\n')
 
+
+class Particle:
+    def __init__(self, vec):
+        self.p = vec[0:3]
+        self.v = vec[3:6]
+        self.a = vec[6:9]
+        self.present = True
+
+    def step(self):
+        for i in range(3):
+            self.v[i] += self.a[i]
+            self.p[i] += self.v[i]
+
+    def get_d(self):
+        return sum([abs(s) for s in self.p])
+
 pattern = r'p=<([ \-\d]*),([ \-\d]*),([ \-\d]*)>, v=<([ \-\d]*),([ \-\d]*),([ \-\d]*)>, a=<([ \-\d]*),([ \-\d]*),([ \-\d]*)>'
-particles = {}
+particles = []
 for i, line in enumerate(my_input):
     t = re.findall(pattern, line)[0]
-    particles[i] = [int(s) for s in t]
+    particles.append(Particle([int(s) for s in t]))
 
 count = 0
-closev = 9999
-closek = 9999
 while True:
+    closev = None
+    closek = None
+    for i, part in enumerate(particles):
+        part.step()
+        d = part.get_d()
+        if closev is None or d < closev:
+            closek = i
+            closev = d
+
+    print(closek, closev)
+    count += 1
     if count >= 1000:
         break
 
-    for k, v in particles.items():
-        # Accelerate
-        vx, vy, vz = particles[k][3], particles[k][4], particles[k][5]
-        ax, ay, az = particles[k][6], particles[k][7], particles[k][8]
-        vx += ax
-        vy += ay
-        vz += az
+print(closek, closev)
+# 389 reaches 4, the closest location, but after a while the particle that remains closest (though never as close) is 91
 
-        # Move
-        particles[k][0] += vx
-        particles[k][1] += vy
-        particles[k][2] += vz
-        particles[k][3] = vx
-        particles[k][4] = vy
-        particles[k][5] = vz
+"""
+--- Part Two ---
+To simplify the problem further, the GPU would like to remove any particles that collide.
+Particles collide if their positions ever exactly match.
+Because particles are updated simultaneously, more than two particles can collide at the same time and place.
+Once particles collide, they are removed and cannot collide with anything else after that tick.
 
-        # Distance
-        d = sum([abs(s) for s in particles[k][0:3]])
+For example:
 
-        if d < closev:
-            closek = k
-            closev = d
+p=<-6,0,0>, v=< 3,0,0>, a=< 0,0,0>
+p=<-4,0,0>, v=< 2,0,0>, a=< 0,0,0>    -6 -5 -4 -3 -2 -1  0  1  2  3
+p=<-2,0,0>, v=< 1,0,0>, a=< 0,0,0>    (0)   (1)   (2)            (3)
+p=< 3,0,0>, v=<-1,0,0>, a=< 0,0,0>
+
+p=<-3,0,0>, v=< 3,0,0>, a=< 0,0,0>
+p=<-2,0,0>, v=< 2,0,0>, a=< 0,0,0>    -6 -5 -4 -3 -2 -1  0  1  2  3
+p=<-1,0,0>, v=< 1,0,0>, a=< 0,0,0>             (0)(1)(2)      (3)
+p=< 2,0,0>, v=<-1,0,0>, a=< 0,0,0>
+
+p=< 0,0,0>, v=< 3,0,0>, a=< 0,0,0>
+p=< 0,0,0>, v=< 2,0,0>, a=< 0,0,0>    -6 -5 -4 -3 -2 -1  0  1  2  3
+p=< 0,0,0>, v=< 1,0,0>, a=< 0,0,0>                       X (3)
+p=< 1,0,0>, v=<-1,0,0>, a=< 0,0,0>
+
+------destroyed by collision------
+------destroyed by collision------    -6 -5 -4 -3 -2 -1  0  1  2  3
+------destroyed by collision------                      (3)
+p=< 0,0,0>, v=<-1,0,0>, a=< 0,0,0>
+In this example, particles 0, 1, and 2 are simultaneously destroyed at the time and place marked X.
+On the next tick, particle 3 passes through unharmed.
+
+How many particles are left after all collisions are resolved?
+"""
+
+# Need to convert to dict as otherwise removing from list changes numbers
+part_dict = {}
+for i, k in enumerate(particles):
+    part_dict[i] = k
+
+count = 0
+while True:
+    plist = defaultdict(list)
+    for i, part in part_dict.items():
+        part.step()
+        plist[tuple(part.p)].append(i)
+
+    # Check for collisions
+    for k, v in plist.items():
+        if len(v) > 1:
+            print(k, v)
+            for j in v:
+                del part_dict[j]
 
     count += 1
+    if count >= 1000:
+        break
 
-print(closek, closev)
-# 209 is too high
+print(len(part_dict))
+
+
