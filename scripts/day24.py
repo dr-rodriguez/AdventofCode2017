@@ -60,59 +60,63 @@ test_input = """0/2
 9/10"""
 my_input = test_input.split('\n')
 
+with open('data/day24.txt', 'r') as f:
+    my_input = f.read().rstrip().split('\n')
+
 components = []
 for line in my_input:
     c = [int(s) for s in line.split('/')]
     components.append(c)
 
-def stringify(bridge):
-    if len(bridge) == 0 or len(bridge[0]) == 0:
-        return ''
-    return '--'.join(['{}/{}'.format(s[0], s[1]) for s in bridge])
 
-
-def strength(bridge):
-    x = [[int(ss) for ss in s.split('/')] for s in bridge.split('--')]
-    flat_list = [item for sublist in x for item in sublist]
-    return sum(flat_list)
-
-
-def check_valid(bridge):
-    """Check if bridge is valid"""
-    port = 0
-    for c in bridge:
-        if port == c[0] or port == c[1]:
-            try:
-                port = [s for s in c if s != port][0]
-            except IndexError:
-                port = c[0]
-        else:
-            return False
-    return True
-
-
-def dfs(comp, port):
-    global components
-    global bridges
-    tcomp = comp.copy()
-    if stringify(comp) in bridges:
-        return
-    if check_valid(comp):
-        bridges.add(stringify(comp))
+# Taking hints from Reddit
+# Note that this gives the longest possible bridges.
+def run(bridge, data):
+    # Get valid components, bridge[1] is the port to match
+    valid = [s for s in data if bridge[1] in s]
+    if len(valid) == 0:
+        yield bridge
     else:
-        return
-    for i, c in enumerate(components):
-        print('loop', c, len(components), 'for', port)
-        if (port == c[0] or port == c[1]) and c not in comp:
-            try:
-                newport = [s for s in c if s != port][0]
-            except IndexError:
-                newport = c[0]
-            print('match', c, newport, 'with', comp)
-            tcomp.append(c)
-            dfs(tcomp, newport)
-    return
+        for v in valid:
+            data_ = data.copy()
+            data_.remove(v)
+            # For each valid component, after removing from the list, add to the bridge recursively
+            for q in run((bridge[0] + [v], v[0] if bridge[1] == v[1] else v[1]), data_):
+                yield q
 
-bridges = set()
-dfs([], 0)
-bridges
+
+bridge = ([], 0)  # this is at tuple of bridge list and port
+maximum = 0
+for bri in run(bridge, components[:]):
+    # print(bri)
+    temp = sum([a + b for a, b in bri[0]])
+    if temp >= maximum:
+        maximum = temp
+print(maximum)
+
+"""
+--- Part Two ---
+The bridge you've built isn't long enough; you can't jump the rest of the way.
+
+In the example above, there are two longest bridges:
+
+0/2--2/2--2/3--3/4
+0/2--2/2--2/3--3/5
+Of them, the one which uses the 3/5 component is stronger; its strength is 0+2 + 2+2 + 2+3 + 3+5 = 19.
+
+What is the strength of the longest bridge you can make? 
+If you can make multiple bridges of the longest length, pick the strongest one.
+"""
+
+bridge = ([], 0)  # this is at tuple of bridge list and port
+maximum = 0
+length = 0
+for bri in run(bridge, components[:]):
+    # print(bri)
+    tempS = sum([a + b for a, b in bri[0]])
+    tempL = len(bri[0])
+    if tempL >= length:
+        if tempS >= maximum:
+            maximum = tempS
+            length = tempL
+print(maximum, length)
