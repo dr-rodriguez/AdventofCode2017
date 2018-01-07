@@ -100,11 +100,15 @@ while True:
 
     elem = my_input[ind].split(' ')
     ind = proc_move(register, elem, ind)
-    print(elem)
-    print(register)
+    # print(elem)
+    # print(register)
     count += 1
-    if count > 10000:
-        break
+    # if count > 10000:
+    #     break
 
 print(register.get('h'))
 # Need to examine what the code is doing and see if I see a pattern
+
+count = 4113968717
+ind = 17
+register = {'c': 126900, 'b': 109900, 'd': 4681, 'f': 0, 'e': 33107, 'g': -76793, 'a': 1}
