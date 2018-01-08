@@ -107,12 +107,104 @@ while True:
     #     break
 
 print(register.get('h'))
-# Need to examine what the code is doing and see if I see a pattern
+# Simulating this takes an eternity!
+# Working it out by hand:
+"""
+a = 1
+b = 9900 + 100000 = 109900
+c = b + 17000 = 126900
 
-count = 4113968717
-ind = 17
-register = {'c': 126900, 'b': 109900, 'd': 4681, 'f': 0, 'e': 33107, 'g': -76793, 'a': 1}
+f = 1
+{
+    d = 2
+    {
+        e = 2
+        {
+            g = (d * e) - b
+            if g == 0: (or: d*e == b)
+                f = 0
+            e += 1
+            g = e - b
+            if e == b: break from this loop
+        }
+        d += 1
+        g = d - b
+        if d == b: break from this loop
+    }
+    if f == 0:
+        h += 1  # most important step
+    g = b - c
+    if b == c:
+        break from this loop
+    else:
+        b = b + 17
+        f = 1
+        continue the outer-most loop
+}
 
-count = 9318296915
-ind = 19
-register = {'c': 126900, 'b': 109900, 'd': 10600, 'f': 0, 'e': 84170, 'g': -25730, 'a': 1}
+set f 1 ...<
+set d 2
+set e 2 <<<
+set g d <<
+mul g e
+sub g b
+jnz g 2 >
+set f 0
+sub e -1 <
+set g e
+sub g b
+jnz g -8 >>
+sub d -1
+set g d
+sub g b
+jnz g -13 >>>
+jnz f 2 >.
+sub h -1
+set g b .<
+sub g c
+jnz g 2 >..
+jnz 1 3 EOF
+sub b -17 ..<
+jnz 1 -23 >...
+"""
+
+a = 1
+b = 109900
+c = b + 17000
+h = 0
+# for b in range(109900, c+1, 17):  # c+1 to include last case (b=c)
+#     f = 1
+#     for d in range(2, b):
+#         if f == 0: continue  # if already found to be prime, no need to continue
+#         for e in range(2, b):
+#             if d * e == b:  # if not prime, set to 0
+#                 f = 0
+#                 break
+#     if f == 0:
+#         h += 1
+#         print(b, c, h)
+# print(h)
+# This still takes too long since it's so many loops.
+
+# Function from stack overflow to check if prime
+import math
+def is_prime(n):
+    if n == 2:
+        return True
+    if n % 2 == 0 or n <= 1:
+        return False
+
+    sqr = int(math.sqrt(n)) + 1
+
+    for divisor in range(3, sqr, 2):
+        if n % divisor == 0:
+            return False
+    return True
+
+
+for b in range(109900, c+1, 17):  # c+1 to include last case (b=c)
+    if not is_prime(b):
+        h += 1
+        print(b, c, h)
+print('DONE')
+print(h)
